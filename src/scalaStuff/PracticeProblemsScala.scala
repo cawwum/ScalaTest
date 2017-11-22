@@ -1,7 +1,105 @@
 package scalaStuff
 
-class PracticeProblemsScala
+class PracticeProblemsScala(p:Int)
 {
+    def zeroes:Stream[Int] = Stream.cons(0,zeroes)
+    def pminus1():Stream[Int] = Stream.cons(p-1,pminus1())
+
+    def streamAdd(n1:Stream[Int],n2:Stream[Int],carry:Int):Stream[Int] = (n1,n2) match
+    {
+        case (Stream.Empty,Stream.Empty) => Stream.empty;
+        case (Stream.Empty,_) => n2;
+        case (_,Stream.Empty) => n1;
+        case (h1#::t1,h2#::t2) =>
+        {
+            val total = carry + h1 + h2
+            if (total < p) Stream.cons(total,streamAdd(t1,t2,0))
+            else Stream.cons(total%p,streamAdd(t1,t2,total/p))
+        }
+    }
+
+    //minuend & subtrahend
+    def streamSub(min:Stream[Int],sub:Stream[Int]):Stream[Int] = (min,sub) match
+    {
+        case (Stream.Empty,Stream.Empty) => Stream.empty
+        case (Stream.Empty,_) => streamSub(pminus1(),sub)
+        case (_,Stream.Empty) => min
+        case (mh#::mt,sh#::st) => if(mh >= sh) Stream.cons(mh-sh,streamSub(mt,st)) else Stream.cons(p+mh-sh,streamSub(borrow(mt),st))
+    }
+
+    def borrow(min:Stream[Int]):Stream[Int] = min match
+    {
+        case Stream.Empty => pminus1()
+        case h#::t => if(h > 0) Stream.cons(h-1,t) else Stream.cons(p-1,borrow(t))
+    }
+
+    //call with n2 reversed up to count, and addacc as 0
+    //returns (digit,carry)
+    def lineMultiply(n1:Stream[Int],n2:Stream[Int],addacc:Int,carry:Int):(Int,Int) = (n1,n2) match
+    {
+        case (Stream.Empty,Stream.Empty) => ((addacc+carry)%p,(addacc+carry)/p)
+        case (Stream.Empty,h2#::t2) => lineMultiply(Stream.empty,t2,addacc,carry)
+        case (h1#::t1,Stream.Empty) => lineMultiply(t1,Stream.empty,addacc,carry)
+        case (h1#::t1,h2#::t2) => lineMultiply(t1,t2,addacc+h1*h2,carry)
+    }
+
+    //call with count starting at 1
+    def streamMultiply(n1:Stream[Int],n2:Stream[Int],count:Int,carry:Int):Stream[Int] =
+    {
+        lineMultiply(n1 take count,n2 take count reverse,0,carry) match
+        {
+            case (a,b) => Stream.cons(a,streamMultiply(n1,n2,count+1,b))
+        }
+    }
+
+
+
+
+    //test streams
+    def ones(): Stream[Int] = Stream.cons(1, ones())
+    def twos():Stream[Int] = Stream.cons(1,Stream.cons(2,Stream.cons(3,Stream.cons(4,Stream.cons(5,zeroes)))))
+    def oness():Stream[Int] = Stream.cons(1,Stream.cons(0,Stream.cons(1,Stream.cons(0,Stream.cons(1,zeroes)))))
+    def twoss():Stream[Int] = Stream.cons(0,Stream.cons(0,Stream.cons(0,Stream.cons(1,Stream.cons(0,zeroes)))))
+    val one:Stream[Int] = Stream.cons(1,Stream.empty)
+    def digits(digit: Int): Stream[Int] =
+    {
+        val currentdigit: Int =
+            if (digit < 10) digit
+            else 0
+
+        Stream.cons(currentdigit, digits(currentdigit + 1))
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def last(list: List[Any]): Any = list match
     {
         case Nil => Nil
@@ -115,56 +213,6 @@ class PracticeProblemsScala
 
      */
 
-    def streamAdd(n1:Stream[Int],n2:Stream[Int],carry:Int):Stream[Int] = (n1,n2) match
-    {
-        case (Stream.Empty,Stream.Empty) => Stream.empty;
-        case (Stream.Empty,_) => n2;
-        case (_,Stream.Empty) => n1;
-        case (h1#::t1,h2#::t2) =>
-        {
-            val total = carry + h1 + h2
-            if (total < 10) Stream.cons(total,streamAdd(t1,t2,0))
-            else Stream.cons(total%10,streamAdd(t1,t2,total/10))
-        }
-    }
-
-    def nines():Stream[Int] = Stream.cons(9,nines())
-
-    //minuend & subtrahend
-    def streamSub(min:Stream[Int],sub:Stream[Int]):Stream[Int] = (min,sub) match
-    {
-        case (Stream.Empty,Stream.Empty) => Stream.empty
-        case (Stream.Empty,_) => streamSub(nines(),sub)
-        case (_,Stream.Empty) => min
-        case (mh#::mt,sh#::st) => if(mh >= sh) Stream.cons(mh-sh,streamSub(mt,st)) else Stream.cons(10+mh-sh,streamSub(borrow(mt),st))
-    }
-
-    def borrow(min:Stream[Int]):Stream[Int] = min match
-    {
-        case Stream.Empty => nines()
-        case h#::t => if(h > 0) Stream.cons(h-1,t) else Stream.cons(9,borrow(t))
-    }
-
-    //call with n2 reversed up to count, and addacc as 0
-    //returns (digit,carry)
-    def lineMultiply(n1:Stream[Int],n2:Stream[Int],addacc:Int,carry:Int):(Int,Int) = (n1,n2) match
-    {
-        case (Stream.Empty,Stream.Empty) => ((addacc+carry)%10,(addacc+carry)/10)
-        case (Stream.Empty,h2#::t2) => lineMultiply(Stream.empty,t2,addacc,carry)
-        case (h1#::t1,Stream.Empty) => lineMultiply(t1,Stream.empty,addacc,carry)
-        case (h1#::t1,h2#::t2) => lineMultiply(t1,t2,addacc+h1*h2,carry)
-    }
-
-    //call with count starting at 1
-    def streamMultiply(n1:Stream[Int],n2:Stream[Int],count:Int,carry:Int):Stream[Int] =
-    {
-        lineMultiply(n1 take count,n2 take count reverse,0,carry) match
-        {
-            case (a,b) => Stream.cons(a,streamMultiply(n1,n2,count+1,b))
-        }
-    }
-
-    def zeroes:Stream[Int] = Stream.cons(0,zeroes)
 
 
     //shift thing doesn't work, as it wants to evaluate the full length of multiplymap
@@ -189,19 +237,6 @@ class PracticeProblemsScala
         case h#::t => Stream.cons((carry+n*h)%10,multiplymap(n,t,(carry+n*h)/10))
     }
 
-    def ones(): Stream[Int] = Stream.cons(1, ones())
-    def twos():Stream[Int] = Stream.cons(1,Stream.cons(2,Stream.cons(3,Stream.cons(4,Stream.cons(5,zeroes)))))
-    def oness():Stream[Int] = Stream.cons(1,Stream.cons(2,Stream.cons(3,Stream.cons(4,Stream.cons(5,zeroes)))))
-    def twoss():Stream[Int] = Stream.cons(1,Stream.cons(2,Stream.cons(3,Stream.cons(4,Stream.cons(5,zeroes)))))
-    val one:Stream[Int] = Stream.cons(1,Stream.empty)
 
-    def digits(digit: Int): Stream[Int] =
-    {
-        val currentdigit: Int =
-            if (digit < 10) digit
-            else 0
-
-        Stream.cons(currentdigit, digits(currentdigit + 1))
-    }
 }
 
