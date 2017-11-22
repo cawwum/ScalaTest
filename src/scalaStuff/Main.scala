@@ -9,11 +9,7 @@ object Main
     {
         val ppScala = new PracticeProblemsScala()
 
-        //ppScala.listAddNoReverse(n1,n2,0) take 20 foreach println
-        //ppScala.ones() take 25 foreach println
-        //ppScala.digits(5) take 25 foreach println
-        //ppScala.streamAdd(ppScala.ones(),ppScala.digits(1),0) take 10 foreach println
-
-        ppScala.streamSub(ppScala.ones(),ppScala.one) take 20 foreach println
+        ppScala.streamMultiply(ppScala.oness(),ppScala.twoss(),1,0) take 20 foreach println
+        //ppScala.streamMultiply2(ppScala.oness(),ppScala.twoss(),0) take 20 foreach println
     }
 }

@@ -145,11 +145,54 @@ class PracticeProblemsScala
         case h#::t => if(h > 0) Stream.cons(h-1,t) else Stream.cons(9,borrow(t))
     }
 
-    def ones(): Stream[Int] =
+    //call with n2 reversed up to count, and addacc as 0
+    //returns (digit,carry)
+    def lineMultiply(n1:Stream[Int],n2:Stream[Int],addacc:Int,carry:Int):(Int,Int) = (n1,n2) match
     {
-        Stream.cons(0, ones())
+        case (Stream.Empty,Stream.Empty) => ((addacc+carry)%10,(addacc+carry)/10)
+        case (Stream.Empty,h2#::t2) => lineMultiply(Stream.empty,t2,addacc,carry)
+        case (h1#::t1,Stream.Empty) => lineMultiply(t1,Stream.empty,addacc,carry)
+        case (h1#::t1,h2#::t2) => lineMultiply(t1,t2,addacc+h1*h2,carry)
     }
 
+    //call with count starting at 1
+    def streamMultiply(n1:Stream[Int],n2:Stream[Int],count:Int,carry:Int):Stream[Int] =
+    {
+        lineMultiply(n1 take count,n2 take count reverse,0,carry) match
+        {
+            case (a,b) => Stream.cons(a,streamMultiply(n1,n2,count+1,b))
+        }
+    }
+
+    def zeroes:Stream[Int] = Stream.cons(0,zeroes)
+
+
+    //shift thing doesn't work, as it wants to evaluate the full length of multiplymap
+
+    def streamMultiply2(n1:Stream[Int],n2:Stream[Int],shift:Int):Stream[Int] = n1 match
+    {
+        case h#::t =>
+            {
+                def appendzeroes(n:Int,ns:Stream[Int]):Stream[Int] = n match
+                {
+                    case 0 => ns
+                    case _ => Stream.cons(0,appendzeroes(n-1,ns))
+                }
+
+                streamAdd(appendzeroes(shift,multiplymap(h,n2,0)),streamMultiply2(t,n2,shift+1),0)
+            }
+    }
+
+    def multiplymap(n:Int,ns:Stream[Int],carry:Int):Stream[Int] = ns match
+    {
+        case Stream.Empty => Stream.empty
+        case h#::t => Stream.cons((carry+n*h)%10,multiplymap(n,t,(carry+n*h)/10))
+    }
+
+    def ones(): Stream[Int] = Stream.cons(1, ones())
+    def twos():Stream[Int] = Stream.cons(1,Stream.cons(2,Stream.cons(3,Stream.cons(4,Stream.cons(5,zeroes)))))
+    def oness():Stream[Int] = Stream.cons(1,Stream.cons(2,Stream.cons(3,Stream.cons(4,Stream.cons(5,zeroes)))))
+    def twoss():Stream[Int] = Stream.cons(1,Stream.cons(2,Stream.cons(3,Stream.cons(4,Stream.cons(5,zeroes)))))
     val one:Stream[Int] = Stream.cons(1,Stream.empty)
 
     def digits(digit: Int): Stream[Int] =
